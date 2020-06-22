@@ -52,9 +52,11 @@ for( gene in genes ){
   })
   # compute the PRS, i.e. a vector that contains the PRS value for each sample
   PRS = apply(num_snps[,snps], 1, function(r){
-    r * betas
+    sum(as.numeric(r * betas))
   })
+  PRS[which(is.infinite(PRS))] = NA
   names(PRS) = rownames(num_snps)
+  names(betas) = snps
   assign(paste(cancertype,"__betas",gene,sep=""), betas)
   assign(paste(cancertype,"__PRS",gene,sep=""), PRS)
 }
