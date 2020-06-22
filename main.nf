@@ -95,7 +95,7 @@ process translate {
   '''
 }
 
-process preselection_svm {
+process prs {
   cpus params.cpu
   memory params.mem+'G'
 
