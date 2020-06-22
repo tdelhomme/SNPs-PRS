@@ -64,7 +64,7 @@ params.output_folder = "oncogenes_PRS_output"
 params.mem = 8
 params.cpu = "2"
 
-if(params.SNPs == null & params.mc3_folder == null 1 params.samples_table){
+if(params.SNPs == null & params.mc3_folder == null & params.samples_table == null){
   exit 1, "Please specify each of the following parameters: --SNPs, --samples_table and --mc3_folder"
 }
 
@@ -135,4 +135,3 @@ process dataviz {
   Rscript !{baseDir}/bin/dataviz_PRS.r
   '''
 }
-

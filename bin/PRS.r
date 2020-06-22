@@ -57,7 +57,7 @@ for( gene in genes ){
   PRS = apply(num_snps[notrain,snps], 1, function(r){
     sum(as.numeric(r * betas), na.rm=T)
   })
-  names(PRS) = rownames(num_snps)
+  names(PRS) = rownames(num_snps)[notrain]
   names(betas) = snps
   assign(paste(cancertype,"__betas",gene,sep=""), betas)
   assign(paste(cancertype,"__PRS",gene,sep=""), PRS)
