@@ -107,7 +107,9 @@ process prs {
   file snps_gene from snps_genes_table
 
   output:
-  set val(tag), file("PRS_*.Rdata") into prs_out
+  file("*labels.Rdata") into prs_labels
+  file("*PRS.Rdata") into prs_scores
+  file("*betas.Rdata") into prs_betas
 
   shell:
   tag=snps_gene.baseName.replace("_translate.txt","").replace("MC3_","")
@@ -116,4 +118,24 @@ process prs {
   '''
 }
 
+process dataviz {
+  memory params.mem+'G'
+  cpus params.cpu
+
+  tag {tag}
+
+  publishDir params.output_folder+"/PLOTS", mode: 'copy'
+
+  input:
+  file(labels) from prs_labels.collect()
+  file(scores) from prs_scores.collect()
+
+  output:
+  file "*.pdf" into pdfs
+
+  shell:
+  '''
+  Rscript !{baseDir}/bin/dataviz_PRS.r
+  '''
+}
 

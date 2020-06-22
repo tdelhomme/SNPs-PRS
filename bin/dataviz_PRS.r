@@ -19,7 +19,7 @@ for(ct in cancertypes){
   plot(x=NA, y=NA, xlim=c(0,1), ylim=c(0,1),ylab="Precision",xlab="Recall",bty='n')
   for(gene in genes){
     score = get(paste(ct,"_translate__PRS",gene,sep=""))
-    test.labels = get(paste(ct,"_translate__testlabel",gene,sep=""))
+    test.labelsold = get(paste(ct,"_translate__testlabel",gene,sep=""))
     # we can't use FALSE/TRUE as labels when negative scores because it considers s<t as false
     # and in our case we can have true <t (because we labelled with t/f)
     test.labels=rep("GENE", length(test.labelsold))
