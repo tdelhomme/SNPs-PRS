@@ -34,16 +34,18 @@ genes = colnames(trans_snps)[which(!grepl("SNP", colnames(trans_snps)))]
 num_snps = apply( as.matrix(trans_snps[,snps]), 2, function(r)as.numeric(as.factor(r)) )
 num_snps[which(num_snps == 3)] = 2 # consider AA and (AT,TT)
 rownames(num_snps) = rownames(trans_snps)
+train = sample(1:nrow(num_snps), nrow(num_snps)*0.65) # use 65% of samples for the beta estimation
+notrain = setdiff( (1:nrow(num_snps)), train)
 
 for( gene in genes ){
   print(paste(date(), "  INFO: starting gene : ", gene, sep=""))
   # compute the betas
-  betas = apply(num_snps[,snps], 2, function(c){
+  betas = apply(num_snps[train,snps], 2, function(c){
     minor_geno = as.numeric(names(table(c))[which.min(table(c))]) # define the alt geno (=exposure) 
     # we need ordered vector because of the dat(table(...)) part, i.e. first line should be unexposed
     c2 = rep("1REF", length(c))
     c2[which(c == minor_geno)] = "2ALT"
-    dat = table(data.frame(c2, trans_snps[, gene]))
+    dat = table(data.frame(c2, trans_snps[train, gene]))
     if(nrow(dat) < 2){ OR=1 } else { # if we only see one genotype, then we can have any effect (log(1)=0)
       ORs = oddsratio.wald(dat)$measure
       OR = ORs[,"estimate"]["2ALT"]
@@ -52,7 +54,7 @@ for( gene in genes ){
   })
   # compute the PRS, i.e. a vector that contains the PRS value for each sample
   betas[which(is.infinite(betas))] = NA
-  PRS = apply(num_snps[,snps], 1, function(r){
+  PRS = apply(num_snps[notrain,snps], 1, function(r){
     sum(as.numeric(r * betas), na.rm=T)
   })
   names(PRS) = rownames(num_snps)
@@ -60,7 +62,7 @@ for( gene in genes ){
   assign(paste(cancertype,"__betas",gene,sep=""), betas)
   assign(paste(cancertype,"__PRS",gene,sep=""), PRS)
   
-  test.labels <- trans_snps[test,gene]
+  test.labels <- trans_snps[notrain,gene]
   assign(paste(cancertype,"__testlabel",gene,sep=""), test.labels)
 }
 

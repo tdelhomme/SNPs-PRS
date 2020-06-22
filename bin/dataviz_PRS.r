@@ -20,6 +20,10 @@ for(ct in cancertypes){
   for(gene in genes){
     score = get(paste(ct,"_translate__PRS",gene,sep=""))
     test.labels = get(paste(ct,"_translate__testlabel",gene,sep=""))
+    # we can't use FALSE/TRUE as labels when negative scores because it considers s<t as false
+    # and in our case we can have true <t (because we labelled with t/f)
+    test.labels=rep("GENE", length(test.labelsold))
+    test.labels[which(test.labelsold == FALSE)] = "NOGENE"
     pred <- prediction(score, test.labels)
     perf <- performance(pred, "prec", "rec")
     roc.x <- unlist(perf@x.values)
