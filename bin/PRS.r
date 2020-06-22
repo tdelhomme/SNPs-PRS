@@ -51,15 +51,19 @@ for( gene in genes ){
     return(log(OR))
   })
   # compute the PRS, i.e. a vector that contains the PRS value for each sample
+  betas[which(is.infinite(betas))] = NA
   PRS = apply(num_snps[,snps], 1, function(r){
-    sum(as.numeric(r * betas))
+    sum(as.numeric(r * betas), na.rm=T)
   })
-  PRS[which(is.infinite(PRS))] = NA
   names(PRS) = rownames(num_snps)
   names(betas) = snps
   assign(paste(cancertype,"__betas",gene,sep=""), betas)
   assign(paste(cancertype,"__PRS",gene,sep=""), PRS)
+  
+  test.labels <- trans_snps[test,gene]
+  assign(paste(cancertype,"__testlabel",gene,sep=""), test.labels)
 }
 
 save(list=paste(cancertype,"__betas", genes, sep=""), file=paste(cancertype,"_betas.Rdata",sep=""))
 save(list=paste(cancertype,"__PRS", genes, sep=""), file=paste(cancertype,"_PRS.Rdata",sep=""))
+save(list=paste(cancertype,"__testlabel", genes, sep=""), file=paste(cancertype,"_labels.Rdata",sep=""))
