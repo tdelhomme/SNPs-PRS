@@ -111,7 +111,7 @@ process prs {
   shell:
   tag=snps_gene.baseName.replace("_translate.txt","").replace("MC3_","")
   '''
-  Rscript !{baseDir}/bin/PRS.r --translate_SNPs=!{snps_gene} --nb_cpu=!{params.cpu} --tag=!{tag}
+  Rscript !{baseDir}/bin/PRS.r --translate_table=!{snps_gene} --nb_cpu=!{params.cpu} --tag=!{tag}
   '''
 }
 
