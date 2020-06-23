@@ -2,14 +2,13 @@ library(ROCR)
 library(ggpubr)
 library(pROC)
 
-labels_files = list.files(path = ".", pattern = "PRS")
+labels_files = list.files(path = ".", pattern = "labels")
 cancertypes = unlist(lapply(labels_files, function(x) unlist(strsplit(x,"_translate_labels"))[1]))
 
 for(ct in cancertypes){
   load(paste(ct, "_translate_labels.Rdata",sep=""))
   load(paste(ct, "_translate_PRS.Rdata",sep=""))
-  genes = unlist(lapply(ls(pattern = paste(ct,"_translate__testlabel",sep="")), 
-                        function(x) unlist(strsplit(x,"testlabel"))[2]))
+  genes =  rownames(get(ls(pattern = paste(ct,"_translate__PRS",sep=""))))
   dat = data.frame(gene = genes, cancertype = ct, AUC = NA, PREC = NA, REC=NA)
   ### plot precision/recall and ROC ###
   print(paste(date(), "  INFO: plot ROC per gene for cancer type: ", ct, sep=""))
@@ -18,8 +17,8 @@ for(ct in cancertypes){
   par(mfrow=c(1,2))
   plot(x=NA, y=NA, xlim=c(0,1), ylim=c(0,1),ylab="Precision",xlab="Recall",bty='n')
   for(gene in genes){
-    score = get(paste(ct,"_translate__PRS",gene,sep=""))
-    test.labelsold = get(paste(ct,"_translate__testlabel",gene,sep=""))
+    score = get(paste(ct,"_translate__PRS",sep=""))[gene,]
+    test.labelsold = get(paste(ct,"_translate__testlabel",sep=""))[,gene]
     # we can't use FALSE/TRUE as labels when negative scores because it considers s<t as false
     # and in our case we can have true <t (because we labelled with t/f)
     test.labels=rep("GENE", length(test.labelsold))
@@ -36,8 +35,8 @@ for(ct in cancertypes){
   }
   plot(x=NA, y=NA, xlim=c(0,1), ylim=c(0,1),ylab="Sensitivity",xlab="Specificity",bty='n')
   for(gene in genes){
-    score = get(paste(ct,"_translate__PRS",gene,sep=""))
-    test.labels = get(paste(ct,"_translate__testlabel",gene,sep=""))
+    score = get(paste(ct,"_translate__PRS",sep=""))[gene,]
+    test.labels = get(paste(ct,"_translate__testlabel",sep=""))[,gene]
     pred <- prediction(score, test.labels)
     perf <- performance(pred, "sens", "spec")
     roc.x <- unlist(perf@x.values)

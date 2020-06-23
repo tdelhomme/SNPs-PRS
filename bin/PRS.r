@@ -38,7 +38,11 @@ train = sample(1:nrow(num_snps), nrow(num_snps)*0.65) # use 65% of samples for t
 notrain = setdiff( (1:nrow(num_snps)), train)
 
 library(foreach)
-res = foreach( gene = genes ) %do% {
+cl <- parallel::makeCluster(10) # this should be an input parameter
+doParallel::registerDoParallel(cl)
+
+res = foreach( gene = genes, .combine = 'cbind' ) %dopar% {
+  library(epitools)
   print(paste(date(), "  INFO: starting gene : ", gene, sep=""))
   # compute the betas
   betas = apply(num_snps[train,snps], 2, function(c){
@@ -55,19 +59,19 @@ res = foreach( gene = genes ) %do% {
   })
   # compute the PRS, i.e. a vector that contains the PRS value for each sample
   betas[which(is.infinite(betas))] = NA
-  PRS = apply(num_snps[notrain,snps], 1, function(r){
-    sum(as.numeric(r * betas), na.rm=T)
-  })
-  names(PRS) = rownames(num_snps)[notrain]
-  names(betas) = snps
-  assign(paste(cancertype,"__betas",gene,sep=""), betas)
-  assign(paste(cancertype,"__PRS",gene,sep=""), PRS)
-  
-  test.labels <- trans_snps[notrain,gene]
-  assign(paste(cancertype,"__testlabel",gene,sep=""), test.labels)
+  betas
 }
-rm(res) # do not keep the result of foreach
 
-save(list=paste(cancertype,"__betas", genes, sep=""), file=paste(cancertype,"_betas.Rdata",sep=""))
-save(list=paste(cancertype,"__PRS", genes, sep=""), file=paste(cancertype,"_PRS.Rdata",sep=""))
-save(list=paste(cancertype,"__testlabel", genes, sep=""), file=paste(cancertype,"_labels.Rdata",sep=""))
+PRS = apply(num_snps[notrain,snps], 1, function(r){
+    prs_genes = r * res
+    apply(prs_genes, 2, function(c) sum(as.numeric(c), na.rm=T))
+})
+rownames(PRS) = genes
+
+assign(paste(cancertype,"__betas",sep=""), res)
+assign(paste(cancertype,"__PRS",sep=""), PRS)
+assign(paste(cancertype,"__testlabel",sep=""), trans_snps[notrain,genes])
+
+save(list=paste(cancertype,"__betas", sep=""), file=paste(cancertype,"_betas.Rdata",sep=""))
+save(list=paste(cancertype,"__PRS", sep=""), file=paste(cancertype,"_PRS.Rdata",sep=""))
+save(list=paste(cancertype,"__testlabel", sep=""), file=paste(cancertype,"_labels.Rdata",sep=""))
