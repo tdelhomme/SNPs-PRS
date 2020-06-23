@@ -37,7 +37,8 @@ rownames(num_snps) = rownames(trans_snps)
 train = sample(1:nrow(num_snps), nrow(num_snps)*0.65) # use 65% of samples for the beta estimation
 notrain = setdiff( (1:nrow(num_snps)), train)
 
-for( gene in genes ){
+library(foreach)
+res = foreach( gene = genes ) %do% {
   print(paste(date(), "  INFO: starting gene : ", gene, sep=""))
   # compute the betas
   betas = apply(num_snps[train,snps], 2, function(c){
@@ -65,6 +66,7 @@ for( gene in genes ){
   test.labels <- trans_snps[notrain,gene]
   assign(paste(cancertype,"__testlabel",gene,sep=""), test.labels)
 }
+rm(res) # do not keep the result of foreach
 
 save(list=paste(cancertype,"__betas", genes, sep=""), file=paste(cancertype,"_betas.Rdata",sep=""))
 save(list=paste(cancertype,"__PRS", genes, sep=""), file=paste(cancertype,"_PRS.Rdata",sep=""))
