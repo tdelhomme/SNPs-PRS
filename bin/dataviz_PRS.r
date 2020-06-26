@@ -33,8 +33,8 @@ for(ct in cancertypes){
       lines(roc.y ~ roc.x, col = colors[which(genes == gene)], lwd = 2)
       dat[match(gene, genes),"PREC"] = ifelse(length(which(roc.x > 0.1))==0,
                                               0, max(roc.y[which(roc.x > 0.1)], na.rm=T))
-      dat[match(gene, genes),"REC"] = ifelse(length(which(roc.y > 0.7))==0,
-                                             0, max(roc.x[which(roc.y > 0.7)], na.rm=T))
+      dat[match(gene, genes),"REC"] = ifelse(length(which(roc.y >= 0.75))==0,
+                                             0, max(roc.x[which(roc.y >= 0.75)], na.rm=T))
     }
     plot(x=NA, y=NA, xlim=c(0,1), ylim=c(0,1),ylab="Sensitivity",xlab="Specificity",bty='n',main=oncotype)
     for(gene in genes){
@@ -77,7 +77,7 @@ for(oncotype in c("MUTATED", "NONMUTATED")){
                   add = "jitter", outlier.shape = NA,           # Add jittered points (remove outliers otherwise duplicated)
                   #add.params = list(size = 0.5, jitter = 0.2),  # Point size and the amount of jittering
                   label = "gene",                               # column containing point labels
-                  label.select = list(criteria = "`y` > 0.7"),  # Select some labels to display
+                  label.select = list(criteria = "`y` >= 0.75"),  # Select some labels to display
                   font.label = list(size = 9, face = "italic"), # label font
                   repel = TRUE,                                 # Avoid label text overplotting
                   legend = "NONE", ylim = c(0,1)
@@ -89,14 +89,14 @@ for(oncotype in c("MUTATED", "NONMUTATED")){
                   add = "jitter",  outlier.shape = NA,          # Add jittered points (remove outliers otherwise duplicated)
                   #add.params = list(size = 0.1, jitter = 0.2),  # Point size and the amount of jittering
                   label = "gene",                               # column containing point labels
-                  label.select = list(criteria = "`y` > 0.7"),  # Select some labels to display
+                  label.select = list(criteria = "`y` >= 0.75"),  # Select some labels to display
                   font.label = list(size = 9, face = "italic"), # label font
                   repel = TRUE,                                 # Avoid label text overplotting
                   legend = "NONE", ylim = c(0,1)
-  ) + geom_hline(yintercept = 0.7, linetype = 2)
+  ) + geom_hline(yintercept = 0.75, linetype = 2)
   
   p3 <- ggboxplot(all_dat, x = "tissue",
-                  y = "REC", ylab = "Max Recall(Precision>0.7)",
+                  y = "REC", ylab = "Max Recall(Precision>0.75)",
                   color = "tissue", palette = "jco",
                   add = "jitter",  outlier.shape = NA,          # Add jittered points (remove outliers otherwise duplicated)
                   #add.params = list(size = 0.1, jitter = 0.2),  # Point size and the amount of jittering
