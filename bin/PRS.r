@@ -47,9 +47,15 @@ res = foreach( gene = genes, .combine = 'cbind' ) %dopar% {
   # compute the betas
   betas = apply(num_snps[train,snps], 2, function(c){
     minor_geno = as.numeric(names(table(c))[which.min(table(c))]) # define the alt geno (=exposure) 
+    major_geno = as.numeric(names(table(c))[which.max(table(c))])
     # we need ordered vector because of the dat(table(...)) part, i.e. first line should be unexposed
     c2 = rep("1REF", length(c))
     c2[which(c == minor_geno)] = "2ALT"
+
+    # correction: 
+    c2 = rep("2ALT", length(c))
+    c2[which(c == major_geno)] = "1REF"
+
     dat = table(data.frame(c2, trans_snps[train, gene]))
     if(nrow(dat) < 2){ OR=1 } else { # if we only see one genotype, then we can have any effect (log(1)=0)
       ORs = oddsratio.wald(dat)$measure
